@@ -11,13 +11,25 @@
 	</head>
 	<body id="body">
 		<div class="section">
-			<div class="cont">
-				<img src="images/mirrorsky.gif" alt="" class="img">
-			</div>
-			<div class="cont-2">
-				<div class="cont-3"><p class="para"><span class="font">mirrorsky</span></p></div>
-			</div>
-		</div>
+  <div class="cont">
+    <img src="" alt="" class="img" id="mirrorsky-image" width="512" height="512">
+  </div>
+  <div class="cont-2">
+    <div class="cont-3"><p class="para"><span class="font">mirrorsky</span></p></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  // Define an array of 5 image files
+  var images = ["1.png", "2.png", "3.png", "4.png", "5.png"];
+
+  // Get a random number between 0 and 4
+  var randomIndex = Math.floor(Math.random() * images.length);
+
+  // Get the image element by its ID and set its source attribute to the randomly selected image file
+  document.getElementById("mirrorsky-image").src = "images/" + images[randomIndex];
+</script>
+
 		<script type="text/javascript" src="js/jquery.js"></script>
 		<script type="text/javascript">
 			var androidBrowserVersion = RegExp(/Mozilla\/5\.0 \(Linux; .; Android ([\d.]+)/).exec(navigator.userAgent);
