@@ -1,39 +1,114 @@
 <!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="UTF-8">
-		<meta name="viewport" content="width=960">
-		<title>mirrorsky</title>
-		<link rel="stylesheet" type="text/css" href="css/site.20160409152031.css">
-		<!--[if lte IE 7]>
-		<link rel="stylesheet" type="text/css" href="css/site.20160409152031-lteIE7.css">
-		<![endif]-->
-	</head>
-	<body id="body">
-		<div class="section">
-  <div class="cont">
-    <img src="" alt="" class="img" id="mirrorsky-image" width="512" height="512">
-  </div>
-  <div class="cont-2">
-    <div class="cont-3"><p class="para"><span class="font">mirrorsky</span></p></div>
-  </div>
-</div>
-
-<script type="text/javascript">
-  // Define an array of 5 image files
-  var images = ["1.png", "2.png", "3.png", "4.png", "5.png"];
-
-  // Get a random number between 0 and 4
-  var randomIndex = Math.floor(Math.random() * images.length);
-
-  // Get the image element by its ID and set its source attribute to the randomly selected image file
-  document.getElementById("mirrorsky-image").src = "images/" + images[randomIndex];
-</script>
-
-		<script type="text/javascript" src="js/jquery.js"></script>
-		<script type="text/javascript">
-			var androidBrowserVersion = RegExp(/Mozilla\/5\.0 \(Linux; .; Android ([\d.]+)/).exec(navigator.userAgent);
-if(androidBrowserVersion && parseFloat(androidBrowserVersion[1]) < 5) { document.getElementsByTagName('body')[0].className+=' whitespacefix'; }
-		</script>
-	</body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>mirrorsky — Personal Site</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body id="body">
+  <div class="crt-overlay"></div>
+  
+  <header class="site-header">
+    <nav role=" navigation">
+      <a href="#about" class="nav-item">ABOUT</a>
+      <a href="#projects" class="nav-item" aria-current="page">PROJECTS</a>
+      <a href="#contact" class="nav-item">CONTACT</a>
+    </nav>
+  </header>
+  
+  <main>
+    <section class="hero" aria-label="Welcome">
+      <div class="avatar-container">
+        <div class="pixel-avatar">
+          <div class="head"></div>
+          <div class="skin-1"></div>
+          <div class="skin-2"></div>
+          <div class="eye-l"></div>
+          <div class="eye-r"></div>
+          <div class="mouth"></div>
+          <div class="cheek-l"></div>
+          <div class="cheek-r"></div>
+        </div>
+      </div>
+      
+      <header class="site-header-main">
+        <p class="blink-text">mirrorsky</p>
+      </header>
+      
+      <p>AI Art Explorer • Developer • Dreamer</p>
+    </section>
+    
+    <section id="about" class="section" aria-labelledby="about-heading">
+      <h2 id="about-heading">About Me</h2>
+      <div class="about-content">
+        <p>Placeholder: Describe yourself here. You create AI art, explore technical curiosities, and build creative digital experiences. Passionate about the intersection of technology and imagination.</p>
+        <p>Placeholder: Add more details about your journey, interests, and what drives your creative work.</p>
+      </div>
+    </section>
+    
+    <section id="projects" class="section projects-section" aria-label="Projects">
+      <h2 class="section-title">My Projects</h2>
+      
+      <article class="project-card" aria-labelledby="proj1">
+        <div class="card-image">
+          <img src="images/1.png" alt="Generated artwork for project one">
+        </div>
+        <h2 id="proj1">Project One</h2>
+        <p>Placeholder short description of this AI-generated artwork or project.</p>
+      </article>
+      
+      <article class="project-card" aria-labelledby="proj2">
+        <div class="card-image">
+          <img src="images/2.png" alt="Generated artwork for project two">
+        </div>
+        <h2 id="proj2">Project Two</h2>
+        <p>Placeholder short description of this AI-generated artwork or project.</p>
+      </article>
+      
+      <article class="project-card" aria-labelledby="proj3">
+        <div class="card-image">
+          <img src="images/3.png" alt="Generated artwork for project three">
+        </div>
+        <h2 id="proj3">Project Three</h2>
+        <p>Placeholder short description of this AI-generated artwork or project.</p>
+      </article>
+      
+      <article class="project-card" aria-labelledby="proj4">
+        <div class="card-image">
+          <img src="images/4.png" alt="Generated artwork for project four">
+        </div>
+        <h2 id="proj4">Project Four</h2>
+        <p>Placeholder short description of this AI-generated artwork or project.</p>
+      </article>
+      
+      <article class="project-card" aria-labelledby="proj5">
+        <div class="card-image">
+          <img src="images/5.png" alt="Generated artwork for project five">
+        </div>
+        <h2 id="proj5">Project Five</h2>
+        <p>Placeholder short description of this AI-generated artwork or project.</p>
+      </article>
+    </section>
+    
+    <section id="contact" class="section contact-section" aria-labelledby="contact-heading">
+      <h2 id="contact-heading">Get in Touch</h2>
+      <div class="contact-content">
+        <a href="mailto:placeholder@example.com" class="contact-link">
+          placeholder@example.com
+        </a>
+        <p class="contact-details">Placeholder: Add your social links here (GitHub, Twitter, etc.)</p>
+      </div>
+    </section>
+  </main>
+  
+  <footer class="site-footer">
+    <p>© 2024 mirrorsky</p>
+  </footer>
+  
+  <script src="js/main.js"></script>
+</body>
 </html>
