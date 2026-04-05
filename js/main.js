@@ -6,21 +6,20 @@
 (function() {
   'use strict';
 
-  // Wait for DOM to be ready
   document.addEventListener('DOMContentLoaded', init);
 
   function init() {
     setupNavigation();
     setupScrollAnimation();
-    setupRandomBackground();
+    setupNavCurrent();
     setupAccessibility();
   }
 
   /**
-   * Setup smooth scroll for navigation links
+   * Smooth scroll + ripple for header menu links only
    */
   function setupNavigation() {
-    const navLinks = document.querySelectorAll('a[href^="#"]');
+    const navLinks = document.querySelectorAll('.site-header a.nav-item[href^="#"]');
 
     navLinks.forEach(function(link) {
       link.addEventListener('click', function(e) {
@@ -34,16 +33,12 @@
             block: 'start'
           });
 
-          // Add ripple effect on click
           createRipple(link, e);
         }
       });
     });
   }
 
-  /**
-   * Create ripple effect on click
-   */
   function createRipple(element, event) {
     const rect = element.getBoundingClientRect();
     const ripple = document.createElement('span');
@@ -55,22 +50,25 @@
     ripple.style.width = ripple.style.height = size + 'px';
     ripple.style.left = x + 'px';
     ripple.style.top = y + 'px';
-    ripple.textContent = '●';
+    ripple.setAttribute('aria-hidden', 'true');
 
     element.appendChild(ripple);
 
-    // Remove ripple after animation
     setTimeout(function() {
       ripple.remove();
     }, 600);
   }
 
   /**
-   * Setup scroll animations for elements
+   * Scroll-in reveal (respect reduced motion via html.js-reveal)
    */
   function setupScrollAnimation() {
-    const animatedElements = document.querySelectorAll('.project-card, .about-content');
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!prefersReduced) {
+      document.documentElement.classList.add('js-reveal');
+    }
 
+    const animatedElements = document.querySelectorAll('.project-card, .about-content');
     const observerOptions = {
       root: null,
       rootMargin: '0px',
@@ -87,45 +85,81 @@
     }, observerOptions);
 
     animatedElements.forEach(function(element) {
-      element.style.opacity = '0';
-      element.style.transform = 'translateY(20px)';
-      element.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
       observer.observe(element);
     });
   }
 
   /**
-   * Create subtle random background shifts
+   * Reflect visible section in nav aria-current
    */
-  function setupRandomBackground() {
-    function shiftBackground() {
-      if (document.hidden) return;
+  function setupNavCurrent() {
+    const sectionIds = ['about', 'projects', 'contact'];
+    const sections = sectionIds.map(function(id) {
+      return document.getElementById(id);
+    }).filter(Boolean);
 
-      const hue = Math.floor(Math.random() * 40) + 200; // Blue range
-      const saturation = 15 + Math.random() * 10;
-      const lightness = 8 + Math.random() * 5;
+    const navLinks = document.querySelectorAll('.site-header a.nav-item[data-section]');
+    if (!sections.length || !navLinks.length) return;
 
-      const body = document.body;
-      body.style.background = `linear-gradient(
-        180deg,
-        hsl(${hue}, ${saturation}%, ${lightness}%) 0%,
-        hsl(${hue}, ${saturation + 5}%, ${lightness + 5}%) 50%,
-        hsl(${hue}, ${saturation}%, ${lightness}%) 100%
-      )`;
+    const ratios = new Map();
+    sections.forEach(function(sec) {
+      ratios.set(sec.id, 0);
+    });
 
-      // Throttle to every 3-5 seconds
-      setTimeout(shiftBackground, 3000 + Math.random() * 2000);
+    function applyAriaCurrent(sectionId) {
+      navLinks.forEach(function(link) {
+        if (link.getAttribute('data-section') === sectionId) {
+          link.setAttribute('aria-current', 'page');
+        } else {
+          link.removeAttribute('aria-current');
+        }
+      });
     }
 
-    // Start the random background effect
-    setTimeout(shiftBackground, 5000);
+    function pickFromHash() {
+      const hash = (location.hash || '').replace(/^#/, '');
+      if (sectionIds.indexOf(hash) !== -1) {
+        applyAriaCurrent(hash);
+        return;
+      }
+      applyAriaCurrent('about');
+    }
+
+    pickFromHash();
+    window.addEventListener('hashchange', pickFromHash);
+
+    const observer = new IntersectionObserver(
+      function(entries) {
+        entries.forEach(function(entry) {
+          ratios.set(entry.target.id, entry.intersectionRatio);
+        });
+
+        let bestId = null;
+        let bestRatio = 0.15;
+        ratios.forEach(function(ratio, id) {
+          if (ratio > bestRatio) {
+            bestRatio = ratio;
+            bestId = id;
+          }
+        });
+
+        if (bestId) {
+          applyAriaCurrent(bestId);
+        }
+      },
+      {
+        root: null,
+        rootMargin: '-28% 0px -40% 0px',
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1]
+      }
+    );
+
+    sections.forEach(function(sec) {
+      observer.observe(sec);
+    });
   }
 
-  /**
-   * Setup accessibility improvements
-   */
   function setupAccessibility() {
-    // Improve focus visibility
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Tab') {
         document.body.style.scrollBehavior = 'auto';
@@ -136,45 +170,24 @@
       document.body.style.scrollBehavior = 'smooth';
     });
 
-    // Skip link for keyboard navigation
     const skipLink = document.getElementById('skip-link');
     if (skipLink) {
       skipLink.addEventListener('click', function(e) {
         e.preventDefault();
-        const mainContent = document.querySelector('main');
-        mainContent?.focus();
-        mainContent?.scrollIntoView({ behavior: 'smooth' });
+        const mainContent = document.getElementById('main');
+        if (mainContent) {
+          try {
+            mainContent.focus({ preventScroll: true });
+          } catch (err) {
+            mainContent.focus();
+          }
+          mainContent.scrollIntoView({ behavior: 'smooth' });
+          history.replaceState(null, '', '#main');
+          document.querySelectorAll('.site-header a.nav-item[data-section]').forEach(function(l) {
+            l.removeAttribute('aria-current');
+          });
+        }
       });
     }
   }
-
 })();
-
-/**
- * CSS Ripple Effect Definitions
- */
-.ripple {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle,
-    rgba(100, 255, 218, 0.6) 0%,
-    rgba(100, 255, 218, 0) 70%
-  );
-  transform: scale(0);
-  animation: rippleAnim 0.6s linear;
-  pointer-events: none;
-}
-
-@keyframes rippleAnim {
-  to {
-    transform: scale(4);
-    opacity: 0;
-  }
-}
-
-/* Add animation class for scroll-in elements */
-.animate-in {
-  opacity: 1 !important;
-  transform: translateY(0) !important;
-}

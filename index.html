@@ -10,20 +10,21 @@
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body id="body">
-  <div class="crt-overlay"></div>
-  
+  <a href="#main" id="skip-link" class="skip-link">Skip to main content</a>
+  <div class="crt-overlay" aria-hidden="true"></div>
+
   <header class="site-header">
-    <nav role=" navigation">
-      <a href="#about" class="nav-item">ABOUT</a>
-      <a href="#projects" class="nav-item" aria-current="page">PROJECTS</a>
-      <a href="#contact" class="nav-item">CONTACT</a>
+    <nav aria-label="Primary">
+      <a href="#about" class="nav-item" data-section="about">ABOUT</a>
+      <a href="#projects" class="nav-item" data-section="projects">PROJECTS</a>
+      <a href="#contact" class="nav-item" data-section="contact">CONTACT</a>
     </nav>
   </header>
-  
-  <main>
+
+  <main id="main" tabindex="-1">
     <section class="hero" aria-label="Welcome">
       <div class="avatar-container">
-        <div class="pixel-avatar">
+        <div class="pixel-avatar" aria-hidden="true">
           <div class="head"></div>
           <div class="skin-1"></div>
           <div class="skin-2"></div>
@@ -34,81 +35,70 @@
           <div class="cheek-r"></div>
         </div>
       </div>
-      
-      <header class="site-header-main">
-        <p class="blink-text">mirrorsky</p>
-      </header>
-      
-      <p>AI Art Explorer • Developer • Dreamer</p>
+
+      <div class="hero-copy">
+        <header class="site-header-main">
+          <h1 class="blink-text">mirrorsky</h1>
+        </header>
+        <p class="tagline">AI Art Explorer • Developer • Dreamer</p>
+      </div>
     </section>
-    
+
     <section id="about" class="section" aria-labelledby="about-heading">
       <h2 id="about-heading">About Me</h2>
-      <div class="about-content">
-        <p>Placeholder: Describe yourself here. You create AI art, explore technical curiosities, and build creative digital experiences. Passionate about the intersection of technology and imagination.</p>
-        <p>Placeholder: Add more details about your journey, interests, and what drives your creative work.</p>
-      </div>
+      <div class="about-content"></div>
     </section>
-    
-    <section id="projects" class="section projects-section" aria-label="Projects">
-      <h2 class="section-title">My Projects</h2>
-      
-      <article class="project-card" aria-labelledby="proj1">
-        <div class="card-image">
-          <img src="images/1.png" alt="Generated artwork for project one">
-        </div>
-        <h2 id="proj1">Project One</h2>
-        <p>Placeholder short description of this AI-generated artwork or project.</p>
-      </article>
-      
-      <article class="project-card" aria-labelledby="proj2">
-        <div class="card-image">
-          <img src="images/2.png" alt="Generated artwork for project two">
-        </div>
-        <h2 id="proj2">Project Two</h2>
-        <p>Placeholder short description of this AI-generated artwork or project.</p>
-      </article>
-      
-      <article class="project-card" aria-labelledby="proj3">
-        <div class="card-image">
-          <img src="images/3.png" alt="Generated artwork for project three">
-        </div>
-        <h2 id="proj3">Project Three</h2>
-        <p>Placeholder short description of this AI-generated artwork or project.</p>
-      </article>
-      
-      <article class="project-card" aria-labelledby="proj4">
-        <div class="card-image">
-          <img src="images/4.png" alt="Generated artwork for project four">
-        </div>
-        <h2 id="proj4">Project Four</h2>
-        <p>Placeholder short description of this AI-generated artwork or project.</p>
-      </article>
-      
-      <article class="project-card" aria-labelledby="proj5">
-        <div class="card-image">
-          <img src="images/5.png" alt="Generated artwork for project five">
-        </div>
-        <h2 id="proj5">Project Five</h2>
-        <p>Placeholder short description of this AI-generated artwork or project.</p>
-      </article>
+
+    <section id="projects" class="section projects-section" aria-labelledby="projects-heading">
+      <h2 id="projects-heading" class="section-title">My Projects</h2>
+
+      <div class="project-grid">
+        <article class="project-card" aria-labelledby="proj1">
+          <div class="card-image">
+            <img src="images/1.png" alt="AI artwork">
+          </div>
+          <h3 id="proj1"></h3>
+        </article>
+
+        <article class="project-card" aria-labelledby="proj2">
+          <div class="card-image">
+            <img src="images/2.png" alt="AI artwork">
+          </div>
+          <h3 id="proj2"></h3>
+        </article>
+
+        <article class="project-card" aria-labelledby="proj3">
+          <div class="card-image">
+            <img src="images/3.png" alt="AI artwork">
+          </div>
+          <h3 id="proj3"></h3>
+        </article>
+
+        <article class="project-card" aria-labelledby="proj4">
+          <div class="card-image">
+            <img src="images/4.png" alt="AI artwork">
+          </div>
+          <h3 id="proj4"></h3>
+        </article>
+
+        <article class="project-card" aria-labelledby="proj5">
+          <div class="card-image">
+            <img src="images/5.png" alt="AI artwork">
+          </div>
+          <h3 id="proj5"></h3>
+        </article>
     </section>
-    
+
     <section id="contact" class="section contact-section" aria-labelledby="contact-heading">
       <h2 id="contact-heading">Get in Touch</h2>
-      <div class="contact-content">
-        <a href="mailto:placeholder@example.com" class="contact-link">
-          placeholder@example.com
-        </a>
-        <p class="contact-details">Placeholder: Add your social links here (GitHub, Twitter, etc.)</p>
-      </div>
+      <div class="contact-content"></div>
     </section>
   </main>
-  
+
   <footer class="site-footer">
-    <p>© 2024 mirrorsky</p>
+    <p>© mirrorsky</p>
   </footer>
-  
+
   <script src="js/main.js"></script>
 </body>
 </html>
