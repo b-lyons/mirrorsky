@@ -1,0 +1,186 @@
+/* Ising simulation page — extends site tokens from styles.css */
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.ising-main {
+  max-width: var(--max-content);
+  margin: 0 auto;
+  padding: var(--space-lg) var(--space-md) var(--space-2xl);
+}
+
+.ising-title {
+  margin-top: 0;
+  margin-bottom: var(--space-md);
+  font-family: var(--font-pixel);
+  font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+  line-height: 1.7;
+  color: var(--color-highlight);
+  text-shadow: 0 0 8px rgba(255, 242, 154, 0.25);
+}
+
+.ising-page .site-header--sub {
+  padding: var(--space-md);
+  border-bottom: 4px solid var(--color-border);
+  background: rgba(10, 10, 18, 0.95);
+}
+
+.ising-page .back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
+  line-height: 1.6;
+  color: var(--color-accent);
+  text-decoration: none;
+  border: 3px solid var(--color-border);
+  background: var(--color-bg-panel);
+  box-shadow: var(--shadow-inset);
+}
+
+.ising-page .back-link:hover,
+.ising-page .back-link:focus-visible {
+  color: var(--color-highlight);
+  border-color: var(--color-accent-dim);
+}
+
+.ising-page .back-link:focus-visible {
+  outline: 2px solid var(--color-highlight);
+  outline-offset: 3px;
+}
+
+.ising-page .ising-intro {
+  max-width: 65ch;
+  margin: 0 0 var(--space-xl);
+  font-size: 1.35rem;
+  color: var(--color-text-muted);
+}
+
+.ising-page .ising-intro code {
+  font-family: var(--font-body);
+  font-size: 1.1em;
+  color: var(--color-accent);
+}
+
+.ising-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+  padding: var(--space-lg);
+  max-width: 42rem;
+  border: 4px solid var(--color-border);
+  background: var(--color-bg-panel);
+  box-shadow: var(--shadow-inset), 6px 6px 0 rgba(0, 0, 0, 0.2);
+}
+
+.ising-controls label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-family: var(--font-pixel);
+  font-size: 0.45rem;
+  line-height: 1.6;
+  color: var(--color-highlight);
+}
+
+.ising-controls input[type="range"] {
+  width: min(100%, 220px);
+  accent-color: var(--color-accent);
+}
+
+.ising-controls .ising-t-readout {
+  font-family: var(--font-body);
+  font-size: 1.25rem;
+  color: var(--color-text);
+}
+
+.ising-btn {
+  min-height: 44px;
+  padding: var(--space-sm) var(--space-md);
+  font-family: var(--font-pixel);
+  font-size: 0.45rem;
+  line-height: 1.6;
+  cursor: pointer;
+  color: var(--color-bg-deep);
+  background: var(--color-accent);
+  border: 3px solid var(--color-border);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.25);
+}
+
+.ising-btn:hover {
+  filter: brightness(1.08);
+}
+
+.ising-btn:focus-visible {
+  outline: 2px solid var(--color-highlight);
+  outline-offset: 3px;
+}
+
+.ising-btn--secondary {
+  color: var(--color-text);
+  background: var(--color-bg-panel);
+  border-color: var(--color-border);
+}
+
+.ising-stats {
+  margin: var(--space-md) 0 0;
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 1.35rem;
+  color: var(--color-text-muted);
+}
+
+.ising-stats output {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-accent);
+}
+
+.ising-lattice {
+  margin-bottom: var(--space-2xl);
+}
+
+.ising-lattice p.ising-hint {
+  margin: 0 0 var(--space-md);
+  font-size: 1.25rem;
+  color: var(--color-text-muted);
+}
+
+.ising-canvas-wrap {
+  width: min(90vmin, 28rem);
+  max-width: 100%;
+  margin: 0 auto;
+  padding: var(--space-sm);
+  border: 4px solid var(--color-border);
+  background: #0a0a12;
+  box-shadow: var(--shadow-inset), 8px 8px 0 rgba(0, 0, 0, 0.35);
+}
+
+#ising-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: crosshair;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ising-page .crt-overlay {
+    animation: none;
+    opacity: 0.75;
+  }
+}
