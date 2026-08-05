@@ -1,0 +1,113 @@
+:root {
+  --bg: #0d1b2a;
+  --panel: #1b2838;
+  --accent: #88c070;
+  --text: #e8f0e8;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "VT323", ui-monospace, monospace;
+}
+#game-container {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  line-height: 0;
+}
+#game-container canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+.overlay {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.05rem;
+}
+.overlay a {
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.4rem;
+  line-height: 1.6;
+  color: #9bbc0f;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #306850;
+  background: rgba(13, 27, 42, 0.75);
+}
+.overlay a:hover, .overlay a:focus-visible {
+  background: #306850;
+  color: #fff;
+  outline: none;
+}
+.controls-hint {
+  padding: 0.5rem 0.75rem;
+  background: rgba(13, 27, 42, 0.75);
+  color: #9aacb8;
+}
+
+/* credits page (estate-credits.html) keeps the original bordered layout */
+body.credits-page {
+  min-height: 100vh;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 1.25rem;
+}
+body.credits-page header {
+  width: 100%;
+  max-width: 960px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  border-bottom: 3px solid #306850;
+  background: var(--panel);
+}
+body.credits-page header h1 {
+  margin: 0;
+  flex: 1;
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.45rem;
+  line-height: 1.8;
+  color: var(--accent);
+}
+body.credits-page .back {
+  font-family: "Press Start 2P", monospace;
+  font-size: 0.4rem;
+  line-height: 1.6;
+  color: #9bbc0f;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #306850;
+}
+body.credits-page .back:hover, body.credits-page .back:focus-visible {
+  background: #306850;
+  color: #fff;
+  outline: none;
+}
+.credits {
+  max-width: 52rem;
+  margin: 1.5rem auto 0;
+  padding: 0 1rem 1.75rem;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #9aacb8;
+}
+.credits a {
+  color: #88c070;
+  word-break: break-word;
+}
+.credits a:hover { color: #c8e090; }
+.credits strong { color: #c8e0d0; }
