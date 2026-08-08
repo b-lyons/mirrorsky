@@ -39,8 +39,21 @@ meta = d['meta']
 GRID_W, GRID_H = meta['COLS'], meta['ROWS']
 XMIN, XMAX, YMIN, YMAX, TILE_M = meta['XMIN'], meta['XMAX'], meta['YMIN'], meta['YMAX'], meta['TILE_M']
 
+# cadastre_grid.json is pre-rotated (see ROTATION_NOTE in its meta) so that the
+# house/pool/paths -- which sit at a real ~49 degree angle to true north -- come
+# out axis-aligned in this grid, matching the orientation the estate was hand-tiled
+# against in map-builder.html. world_to_grid() therefore does the original
+# real-world-meters -> unrotated-grid lookup, then applies that same rotation
+# (K, Offset, padX/padY, all baked in at grid-generation time) to land in this
+# grid's actual coordinate frame.
+PAD_X, PAD_Y = meta['padX'], meta['padY']
+K = complex(meta['K_re'], meta['K_im'])
+OFFSET = complex(meta['Offset_re'], meta['Offset_im'])
+
 def world_to_grid(X, Y):
-    return ((X - XMIN) / TILE_M, (YMAX - Y) / TILE_M)
+    old_c, old_r = (X - XMIN) / TILE_M, (YMAX - Y) / TILE_M
+    new_g = (complex(old_c, old_r) - OFFSET / 15.5) / K
+    return (new_g.real + PAD_X, new_g.imag + PAD_Y)
 
 ground = [[GRASS for _ in range(GRID_W)] for _ in range(GRID_H)]
 building = [[None for _ in range(GRID_W)] for _ in range(GRID_H)]
@@ -104,24 +117,73 @@ for comp in buildings:
     for (r, c) in comp:
         ground[r][c] = ROOF_FILL
 
-# The two largest components in the middle of the map (away from the hamlet
-# rows at the bottom) are the main house (parcel 56) and the pool house
-# (parcel 55); stamp the detailed roof/window sprite on the north edge of
-# each for a bit of visual richness on top of the accurate flat footprint.
-mid_map_buildings = [comp for comp in buildings if len(comp) >= 15 and bbox(comp)[1] < 65]
-mid_map_buildings.sort(key=lambda comp: bbox(comp)[0])  # topmost (northmost) first
-for comp in mid_map_buildings[:2]:
+# cadastre_grid.json is now rotated to the estate's true orientation rather
+# than true north (see world_to_grid() above), so "south"/"north" no longer
+# line up with +row/-row the way they used to. Everything below identifies
+# the house/pool-house/gatehouse and lays out paths using real spatial
+# relationships (distance to water, distance to the house, the direction
+# from the house toward the entrance) instead of hardcoded row/col ranges,
+# so it stays correct regardless of how the grid is oriented.
+water_cells = [(r, c) for r in range(GRID_H) for c in range(GRID_W) if cad[r][c] == 'WATER']
+
+# Multi-source BFS from every water cell gives exact grid-distance to the
+# nearest water for every cell in one linear pass (used below for both
+# building identification and the "wooded riverbank" decoration density).
+dist_to_water = [[None] * GRID_W for _ in range(GRID_H)]
+_q = deque()
+for (r, c) in water_cells:
+    dist_to_water[r][c] = 0
+    _q.append((r, c))
+while _q:
+    r, c = _q.popleft()
+    d = dist_to_water[r][c]
+    for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < GRID_H and 0 <= nc < GRID_W and dist_to_water[nr][nc] is None:
+            dist_to_water[nr][nc] = d + 1
+            _q.append((nr, nc))
+
+# The main house and pool house (parcels 56/55) are the two significant
+# building footprints closest to the river; the closer of the two -- it
+# sits right on the riverbank -- is the main house.
+sizable = [comp for comp in buildings if len(comp) >= 15]
+sizable.sort(key=lambda comp: min(dist_to_water[r][c] for (r, c) in comp))
+MAIN_HOUSE, POOL_HOUSE = (sizable + [None, None])[:2]
+
+for comp in (MAIN_HOUSE, POOL_HOUSE):
+    if not comp:
+        continue
     r0, r1, c0, c1 = bbox(comp)
     cc = (c0 + c1) // 2
     stamp(building, max(0, cc - 1), r0, BUILDING)
 
-MAIN_HOUSE = mid_map_buildings[0] if mid_map_buildings else None
-POOL_HOUSE = mid_map_buildings[1] if len(mid_map_buildings) > 1 else None
+house_cr, house_cc = centroid(MAIN_HOUSE) if MAIN_HOUSE else (GRID_H / 2, GRID_W / 2)
 
-# --- Pool: a small rectangle beside the pool house footprint ---
+# --- Pool: a small rectangle beside the pool house footprint, offset along
+# the pool house's own long axis rather than assuming it's axis-aligned ---
 if POOL_HOUSE:
-    r0, r1, c0, c1 = bbox(POOL_HOUSE)
-    fill(ground, c1 + 1, c1 + 5, r0 + 1, r0 + 4, POOL)
+    pr0, pr1, pc0, pc1 = bbox(POOL_HOUSE)
+    ph_cr, ph_cc = centroid(POOL_HOUSE)
+    # direction away from the main house, through the pool house -- that's
+    # the side the pool sits on
+    away_r, away_c = ph_cr - house_cr, ph_cc - house_cc
+    mag = math.hypot(away_r, away_c) or 1
+    away_r, away_c = away_r / mag, away_c / mag
+    pool_cr = int(ph_cr + away_r * 6)
+    pool_cc = int(ph_cc + away_c * 6)
+    pool_c0, pool_c1, pool_r0, pool_r1 = pool_cc - 2, pool_cc + 2, pool_cr - 1, pool_cr + 2
+    fill(ground, pool_c0, pool_c1, pool_r0, pool_r1, POOL)
+    # a one-tile poolside path all the way round, matching the hand-tiled
+    # reference (the automated pool used to be a bare rectangle with nothing
+    # around it)
+    for r in range(pool_r0 - 1, pool_r1 + 1):
+        for c in range(pool_c0 - 1, pool_c1 + 1):
+            if not (0 <= r < GRID_H and 0 <= c < GRID_W):
+                continue
+            if pool_r0 <= r < pool_r1 and pool_c0 <= c < pool_c1:
+                continue  # inside the pool itself
+            if ground[r][c] == GRASS:
+                ground[r][c] = PATH
 
 # --- Tennis court: manually located on the cadastral plan (a dashed
 # rectangle that doesn't classify by fill colour), centred in its bbox ---
@@ -130,98 +192,111 @@ tc2, tc3 = world_to_grid(1527450, 7227994)
 tcx = int((tc0 + tc2) / 2); tcy = int((tc1 + tc3) / 2)
 fill(ground, tcx - 6, tcx + 6, tcy - 4, tcy + 4, TENNIS)
 
-# --- Driveway: from the south edge (Rue du Prieuré) up to the main house's
-# forecourt, routed past the small building near the entrance (likely a
-# lodge/gatehouse) rather than in a straight line ---
-gatehouse = None
-for comp in buildings:
-    r0, r1, c0, c1 = bbox(comp)
-    if 65 <= r0 <= 78 and c1 < 35:
-        gatehouse = comp
-        break
+# --- Driveway: from the road up to the main house's forecourt, routed past
+# the small building near the entrance (likely a lodge/gatehouse). The
+# gatehouse is simply the nearest other sizable building to the main house --
+# a very robust signal regardless of grid orientation. ---
+others = [comp for comp in sizable if comp is not MAIN_HOUSE and comp is not POOL_HOUSE]
+gatehouse = min(others, key=lambda comp: math.hypot(centroid(comp)[0] - house_cr, centroid(comp)[1] - house_cc)) if others else None
+
+if gatehouse:
+    gate_cr, gate_cc = centroid(gatehouse)
+else:
+    gate_cr, gate_cc = house_cr + 20, house_cc + 15
+
+# Direction from the house toward the entrance/road side -- this replaces
+# the old assumption that the road is due south (+row) of the house.
+drive_r, drive_c = gate_cr - house_cr, gate_cc - house_cc
+_mag = math.hypot(drive_r, drive_c) or 1
+drive_r, drive_c = drive_r / _mag, drive_c / _mag
 
 if MAIN_HOUSE:
     hr0, hr1, hc0, hc1 = bbox(MAIN_HOUSE)
-    house_c = (hc0 + hc1) // 2
-    house_south = hr1 + 1
+    house_edge_r = int(house_cr + drive_r * (hr1 - hr0 + 2) / 2 + drive_r * 2)
+    house_edge_c = int(house_cc + drive_c * (hc1 - hc0 + 2) / 2 + drive_c * 2)
 else:
-    house_c, house_south = 38, 46
+    house_edge_r, house_edge_c = int(house_cr), int(house_cc)
 
-if gatehouse:
-    gr0, gr1, gc0, gc1 = bbox(gatehouse)
-    gate_c = (gc0 + gc1) // 2
-    gate_r = gr0
-else:
-    gate_c, gate_r = 26, 71
+def path_strip(cr, cc, half=1):
+    fill(ground, int(cc) - half - 1, int(cc) + half + 1, int(cr) - half, int(cr) + half + 1, PATH)
 
-# forecourt in front of the house
-fill(ground, house_c - 5, house_c + 5, house_south, house_south + 3, PATH)
+# forecourt immediately in front of the house
+path_strip(house_edge_r, house_edge_c, half=2)
 
 # path segment: house forecourt -> gatehouse
-steps = max(1, gate_r - house_south)
+steps = max(1, int(_mag))
 for i in range(steps + 1):
     t = i / steps
-    r = int(house_south + 3 + t * (gate_r - (house_south + 3)))
-    c = int(house_c + t * (gate_c - house_c))
-    fill(ground, c - 1, c + 2, r, r + 1, PATH)
+    r = house_edge_r + t * (gate_cr - house_edge_r)
+    c = house_edge_c + t * (gate_cc - house_edge_c)
+    path_strip(r, c)
 
-# path segment: gatehouse -> south edge (Rue du Prieuré)
-for r in range(gate_r, GRID_H):
-    t = (r - gate_r) / max(1, (GRID_H - 1 - gate_r))
-    c = int(gate_c + t * (10))  # drift slightly east toward the road
-    fill(ground, c - 1, c + 2, r, r + 1, PATH)
+# path segment: gatehouse -> map edge in the same direction (representing
+# the driveway continuing on to reach the public road)
+edge_r, edge_c = gate_cr, gate_cc
+for _ in range(int(GRID_W + GRID_H)):
+    edge_r += drive_r * 2
+    edge_c += drive_c * 2
+    if not (0 <= edge_r < GRID_H and 0 <= edge_c < GRID_W):
+        break
+    path_strip(edge_r, edge_c)
 
-# the public road itself, a band along the south edge
-fill(ground, 0, 55, GRID_H - 2, GRID_H, PATH)
+# a stretch of public road around where the driveway meets the grid edge
+road_len = 24
+perp_r, perp_c = -drive_c, drive_r  # perpendicular to the driveway direction
+for i in range(-road_len, road_len):
+    r = edge_r + perp_r * i
+    c = edge_c + perp_c * i
+    path_strip(r, c)
 
-# --- Spawn point: south end of the driveway, at the road ---
-spawn_tile_x, spawn_tile_y = gate_c + 8, GRID_H - 3
+# --- Spawn point: at the road, just off the end of the driveway ---
+spawn_tile_x = max(1, min(GRID_W - 2, int(edge_c - drive_c * 3)))
+spawn_tile_y = max(1, min(GRID_H - 2, int(edge_r - drive_r * 3)))
 spawn_px = spawn_tile_x * 32 + 16
 spawn_py = spawn_tile_y * 32 + 16
 
 # --- Decoration: matched against the aerial photo, which shows dense forest
-# on the island AND in a solid wooded band between the river and the house
-# (not open field), a mown clearing right around the house/pool, and lighter
-# tree cover through the rest of the park. ---
+# along the riverbank/island, a mown clearing right around the house/pool,
+# and lighter tree cover through the rest of the park. Zones are defined by
+# real distance (to water, to the house) rather than row/col ranges, so they
+# hold up under any grid rotation. ---
 def h(x, y, salt):
     return (x * 92821 + y * 68917 + salt) % 1000
 
-house_r0 = bbox(MAIN_HOUSE)[0] if MAIN_HOUSE else 36
+CLEARING_RADIUS = 15
+PARK_RADIUS = 48
+RIVERBANK_BAND = 6
 
 for r in range(GRID_H):
     for c in range(GRID_W):
         if ground[r][c] != GRASS or building[r][c] is not None:
             continue
-        # island: enclosed by the river loop, NW area -- dense forest
-        is_island_zone = r < 26 and c < 40
-        # wooded band between the river and the house's north wall
-        is_north_wood = 20 <= r < house_r0 and 20 < c < 65
-        # park: east/southeast of the house, away from the driveway/hamlet
-        is_park_zone = 20 < r < 70 and c > (house_c + 8 if MAIN_HOUSE else 46)
-        # mown clearing immediately around the house/pool/forecourt
-        is_clearing = MAIN_HOUSE and (house_c - 11) < c < (house_c + 16) and house_r0 - 3 < r < house_south + 5
-
-        if is_clearing:
+        dist_house = math.hypot(r - house_cr, c - house_cc)
+        if dist_house < CLEARING_RADIUS:
+            continue  # mown clearing right around the house/pool
+        is_riverbank = dist_to_water[r][c] is not None and dist_to_water[r][c] <= RIVERBANK_BAND
+        is_park_zone = dist_house < PARK_RADIUS
+        if not (is_riverbank or is_park_zone):
             continue
         # h() returns 0-999; these are out of 1000, not 100
-        density = 620 if (is_island_zone or is_north_wood) else 260
-        if is_island_zone or is_north_wood or is_park_zone:
-            v = h(c, r, 7)
-            if v < density:
-                building[r][c] = TREE if v % 2 == 0 else TREE2
-            elif v < density + 120:
-                building[r][c] = BUSH_A if v % 2 == 0 else BUSH_B
+        density = 620 if is_riverbank else 260
+        v = h(c, r, 7)
+        if v < density:
+            building[r][c] = TREE if v % 2 == 0 else TREE2
+        elif v < density + 120:
+            building[r][c] = BUSH_A if v % 2 == 0 else BUSH_B
 
-# --- Garden loop path east of the pool, matching the oval walking path
-# visible in the aerial photo ---
+# --- Garden loop path near the pool, matching the oval walking path visible
+# in the aerial photo, offset to the park side (away from the main house) ---
 if POOL_HOUSE:
-    r0, r1, c0, c1 = bbox(POOL_HOUSE)
-    loop_cx, loop_cy = c1 + 14, (r0 + r1) // 2
-    loop_rx, loop_ry = 10, 7
-    for deg in range(0, 360, 3):
+    ph_cr, ph_cc = centroid(POOL_HOUSE)
+    loop_cr = ph_cr + away_r * 20
+    loop_cc = ph_cc + away_c * 20
+    loop_rx, loop_ry = 10, 10
+    for deg in range(0, 360, 2):
         rad = math.radians(deg)
-        lc = int(loop_cx + loop_rx * math.cos(rad))
-        lr = int(loop_cy + loop_ry * math.sin(rad))
+        lc = int(loop_cc + loop_rx * math.cos(rad))
+        lr = int(loop_cr + loop_ry * math.sin(rad))
         if 0 <= lr < GRID_H and 0 <= lc < GRID_W and ground[lr][lc] == GRASS:
             ground[lr][lc] = PATH
             building[lr][lc] = None
@@ -232,10 +307,11 @@ for c in range(tcx - 7, tcx + 8):
         if 0 <= r < GRID_H and 0 <= c < GRID_W and ground[r][c] == GRASS and building[r][c] is None:
             building[r][c] = BUSH_A if (c % 2 == 0) else BUSH_B
 
-# a couple of flowers by the house forecourt
+# a couple of flowers by the house forecourt, either side of the driveway
 if MAIN_HOUSE:
-    for c in (house_c - 6, house_c + 6):
-        r = house_south + 1
+    for sign in (-1, 1):
+        r = int(house_edge_r + drive_r * 3 + perp_r * 6 * sign)
+        c = int(house_edge_c + drive_c * 3 + perp_c * 6 * sign)
         if 0 <= r < GRID_H and 0 <= c < GRID_W and ground[r][c] == GRASS:
             building[r][c] = FLOWER
 

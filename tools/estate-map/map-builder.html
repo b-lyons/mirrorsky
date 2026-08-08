@@ -74,7 +74,7 @@
       <button id="refAerial">Aerial</button>
     </div>
     <label class="row">Opacity <input type="range" id="refOpacity" min="0" max="100" value="70"></label>
-    <div class="hint">Hold <b>Alt</b> and drag to move the reference image; <b>Alt</b>+scroll to scale it; <b>Alt+Shift</b>+scroll to rotate it. Each reference remembers its own position.</div>
+    <div class="hint">Hold <b>Option</b> and drag to move the reference images; <b>Option</b>+scroll to scale; <b>Option+Shift</b>+scroll to rotate. All reference layers move together, so they stay aligned with each other.</div>
     <label class="row">Offset X <input type="number" id="refX" step="1"></label>
     <label class="row">Offset Y <input type="number" id="refY" step="1"></label>
     <label class="row">Scale <input type="number" id="refScale" step="0.01"></label>
@@ -86,6 +86,7 @@
       <button id="rotCW5">+5°</button>
     </div>
     <button id="resetCad" class="small">Reset cadastre alignment</button>
+    <button id="resetAerial" class="small">Reset aerial alignment</button>
 
     <h2>Layer</h2>
     <div class="layerbtns">
@@ -98,8 +99,8 @@
     <div class="palette" id="palette"></div>
 
     <h2>Grid</h2>
-    <label class="row">Width <input type="number" id="gridW" value="92"></label>
-    <label class="row">Height <input type="number" id="gridH" value="92"></label>
+    <label class="row">Width <input type="number" id="gridW" value="132"></label>
+    <label class="row">Height <input type="number" id="gridH" value="132"></label>
     <button id="resizeGrid" class="wide">Resize grid (keeps data)</button>
 
     <hr>
@@ -168,7 +169,7 @@ const GROUND_COLLIDE = new Set([tid(1,0), tid(2,0), tid(5,0)]); // water, pool, 
 const DECO_COLLIDE = new Set(BUILDING_TILES);
 
 // ---- State ----
-let gridW = 92, gridH = 92;
+let gridW = 132, gridH = 132;
 let ground = makeGrid(gridW, gridH, null);
 let deco = makeGrid(gridW, gridH, null);
 let history = [];
@@ -184,9 +185,36 @@ let activeTile = tid(0,0); // grass by default
 
 let view = { zoom: 15.5, panX: 0, panY: 0 }; // zoom = on-screen px per grid cell
 
-const CAD_DEFAULT = { offsetX: -31, offsetY: -737.8, scale: 1, rotation: 0 };
-const AERIAL_DEFAULT = { offsetX: 0, offsetY: 0, scale: 1, rotation: 0 };
-let refState = {
+// cadastre_grid.json (and therefore this whole 132x132 grid) is oriented to match
+// the estate's real ~49 degree rotation relative to true north, not true north
+// itself -- see the ROTATION_NOTE in cadastre_grid.json's meta and build_map.py's
+// world_to_grid() for how that's derived. These defaults are exactly the alignment
+// that produces that orientation, so a fresh page load already lines the cadastre
+// image up with the grid; no by-eye rotation needed before tiling.
+const CAD_DEFAULT = { offsetX: 30, offsetY: -419, scale: 1, rotation: -49.0 };
+// Same idea for the aerial photo. Refit from three precisely-identified landmarks
+// (the pool's exact corners plus the main house and pool house roof outlines, all
+// read off a zoomed, gridded crop of aerial.png) against their real grid positions
+// from build_map.py -- residuals came out under 0.2 grid cells on all three, a much
+// tighter fit than the first pass (which used blurrier, lower-zoom landmark guesses).
+const AERIAL_DEFAULT = { offsetX: 401.34, offsetY: 318.93, scale: 1.2139, rotation: -20.40 };
+
+// Reference alignment is fiddly to redo, so persist it across reloads/switches --
+// losing this was the actual cause of refs "going out of alignment" (there was no
+// data-loss bug, the state just never survived a page refresh before).
+const REF_STORAGE_KEY = 'estate-map-builder:refState';
+function loadRefState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(REF_STORAGE_KEY));
+    if (saved && saved.cadastre && saved.aerial) return saved;
+  } catch (e) { /* ignore malformed/missing storage */ }
+  return null;
+}
+function saveRefState() {
+  try { localStorage.setItem(REF_STORAGE_KEY, JSON.stringify(refState)); } catch (e) { /* ignore quota errors */ }
+}
+const savedRefState = loadRefState();
+let refState = savedRefState || {
   cadastre: Object.assign({}, CAD_DEFAULT),
   aerial: Object.assign({}, AERIAL_DEFAULT),
 };
@@ -374,7 +402,11 @@ canvas.addEventListener('contextmenu', e => e.preventDefault());
 canvas.addEventListener('mousedown', (e) => {
   if (e.altKey && activeRef !== 'none') {
     altDragging = true;
-    altDragStart = { x: e.clientX, y: e.clientY, ref: Object.assign({}, refState[activeRef]) };
+    // snapshot every reference layer's offset, not just the active one, so
+    // dragging moves them all together and keeps them aligned with each other
+    const refs = {};
+    for (const key of Object.keys(refState)) refs[key] = Object.assign({}, refState[key]);
+    altDragStart = { x: e.clientX, y: e.clientY, refs };
     return;
   }
   if (e.button === 1 || spaceDown) {
@@ -399,9 +431,11 @@ window.addEventListener('mousemove', (e) => {
 
   if (altDragging) {
     const dx = e.clientX - altDragStart.x, dy = e.clientY - altDragStart.y;
-    const rs = refState[activeRef];
-    rs.offsetX = altDragStart.ref.offsetX + dx / (view.zoom / 15.5);
-    rs.offsetY = altDragStart.ref.offsetY + dy / (view.zoom / 15.5);
+    const factor = view.zoom / 15.5;
+    for (const key of Object.keys(refState)) {
+      refState[key].offsetX = altDragStart.refs[key].offsetX + dx / factor;
+      refState[key].offsetY = altDragStart.refs[key].offsetY + dy / factor;
+    }
     syncRefInputs();
     draw();
     return;
@@ -423,22 +457,32 @@ window.addEventListener('mousemove', (e) => {
   updateStatus(r, c);
 });
 
-window.addEventListener('mouseup', () => { painting = false; panning = false; altDragging = false; });
+window.addEventListener('mouseup', () => {
+  painting = false; panning = false;
+  if (altDragging) saveRefState();
+  altDragging = false;
+});
 
 canvas.addEventListener('wheel', (e) => {
   e.preventDefault();
   if (e.altKey && e.shiftKey && activeRef !== 'none') {
-    const rs = refState[activeRef];
-    rs.rotation = (rs.rotation || 0) + (e.deltaY < 0 ? -1 : 1);
+    const delta = (e.deltaY < 0 ? -1 : 1);
+    for (const key of Object.keys(refState)) {
+      refState[key].rotation = (refState[key].rotation || 0) + delta;
+    }
     syncRefInputs();
     draw();
+    saveRefState();
     return;
   }
   if (e.altKey && activeRef !== 'none') {
-    const rs = refState[activeRef];
-    rs.scale *= (e.deltaY < 0 ? 1.05 : 0.95);
+    const factor = (e.deltaY < 0 ? 1.05 : 0.95);
+    for (const key of Object.keys(refState)) {
+      refState[key].scale *= factor;
+    }
     syncRefInputs();
     draw();
+    saveRefState();
     return;
   }
   const rect = canvas.getBoundingClientRect();
@@ -480,9 +524,12 @@ function syncRefInputs() {
 }
 function nudgeRotation(deg) {
   if (activeRef === 'none') return;
-  refState[activeRef].rotation = (refState[activeRef].rotation || 0) + deg;
+  for (const key of Object.keys(refState)) {
+    refState[key].rotation = (refState[key].rotation || 0) + deg;
+  }
   syncRefInputs();
   draw();
+  saveRefState();
 }
 document.getElementById('rotCCW5').addEventListener('click', () => nudgeRotation(-5));
 document.getElementById('rotCCW1').addEventListener('click', () => nudgeRotation(-1));
@@ -507,17 +554,39 @@ document.getElementById('refOpacity').addEventListener('input', (e) => {
   document.getElementById(id).addEventListener('change', () => {
     if (activeRef === 'none') return;
     const rs = refState[activeRef];
-    rs.offsetX = parseFloat(document.getElementById('refX').value) || 0;
-    rs.offsetY = parseFloat(document.getElementById('refY').value) || 0;
-    rs.scale = parseFloat(document.getElementById('refScale').value) || 1;
-    rs.rotation = parseFloat(document.getElementById('refRotation').value) || 0;
+    // apply as a delta from the active ref's previous value to every layer,
+    // rather than overwriting each layer with the same absolute number --
+    // the layers naturally have different absolute offset/scale/rotation
+    // (different source images), so only the *change* should be shared.
+    const newX = parseFloat(document.getElementById('refX').value) || 0;
+    const newY = parseFloat(document.getElementById('refY').value) || 0;
+    const newScale = parseFloat(document.getElementById('refScale').value) || 1;
+    const newRotation = parseFloat(document.getElementById('refRotation').value) || 0;
+    const dX = newX - rs.offsetX;
+    const dY = newY - rs.offsetY;
+    const scaleFactor = rs.scale ? newScale / rs.scale : 1;
+    const dRotation = newRotation - (rs.rotation || 0);
+    for (const key of Object.keys(refState)) {
+      refState[key].offsetX += dX;
+      refState[key].offsetY += dY;
+      refState[key].scale *= scaleFactor;
+      refState[key].rotation = (refState[key].rotation || 0) + dRotation;
+    }
     draw();
+    saveRefState();
   });
 });
 document.getElementById('resetCad').addEventListener('click', () => {
   refState.cadastre = Object.assign({}, CAD_DEFAULT);
   if (activeRef === 'cadastre') syncRefInputs();
   draw();
+  saveRefState();
+});
+document.getElementById('resetAerial').addEventListener('click', () => {
+  refState.aerial = Object.assign({}, AERIAL_DEFAULT);
+  if (activeRef === 'aerial') syncRefInputs();
+  draw();
+  saveRefState();
 });
 
 document.getElementById('layerGround').addEventListener('click', () => setLayer('ground'));
@@ -606,6 +675,13 @@ document.getElementById('exportBtn').addEventListener('click', () => {
     compressionlevel: -1, width: gridW, height: gridH, tilewidth: 32, tileheight: 32,
     infinite: false, orientation: 'orthogonal', renderorder: 'right-down',
     type: 'map', tiledversion: '1.10.2', version: '1.10', nextlayerid: 4, nextobjectid: 2,
+    // Not part of the Tiled schema -- ignored by the game, but records exactly how the
+    // reference images were positioned at export time. Without this, tiles painted
+    // against a reference that was dragged/scaled/rotated away from its calibrated
+    // default are impossible to map back to real-world cadastral coordinates later.
+    properties: [
+      { name: 'refStateAtExport', type: 'string', value: JSON.stringify(refState) },
+    ],
     layers: [
       { id:1, name:'Ground', type:'tilelayer', width:gridW, height:gridH, x:0, y:0, opacity:1, visible:true, data: groundData },
       { id:3, name:'Building', type:'tilelayer', width:gridW, height:gridH, x:0, y:0, opacity:1, visible:true, data: decoData },
