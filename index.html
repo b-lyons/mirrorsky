@@ -3,133 +3,164 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>mirrorsky — Personal Site</title>
+  <title>MirrorSky Productions — record label, London</title>
+  <meta name="description" content="MirrorSky Productions is a record label in London making candy-coated pop that sounds like a mirror melting.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
 </head>
-<body id="body">
-  <a href="#main" id="skip-link" class="skip-link">Skip to main content</a>
-  <div class="crt-overlay" aria-hidden="true"></div>
+<body>
+  <a href="#top" class="skip-link">Skip to main content</a>
 
-  <header class="site-header">
-    <nav aria-label="Primary">
-      <a href="#about" class="nav-item" data-section="about">ABOUT</a>
-      <a href="#projects" class="nav-item" data-section="projects">PROJECTS</a>
-      <a href="#contact" class="nav-item" data-section="contact">CONTACT</a>
-    </nav>
-  </header>
+  <div class="page">
+    <div class="glitter-layer" aria-hidden="true"></div>
+    <div class="sheen-layer" aria-hidden="true"></div>
+    <div class="blob blob--pink" aria-hidden="true"></div>
+    <div class="blob blob--cyan" aria-hidden="true"></div>
+    <div class="blob blob--yellow" aria-hidden="true"></div>
 
-  <main id="main" tabindex="-1">
-    <section class="hero" aria-label="Welcome">
-      <div class="avatar-container">
-        <div class="pixel-avatar" aria-hidden="true">
-          <div class="hair"></div>
-          <div class="head"></div>
-          <div class="ear"></div>
-          <div class="eye-l"></div>
-          <div class="eye-r"></div>
-          <div class="mouth"></div>
-          <div class="mustache"></div>
-          <div class="beard"></div>
+    <header class="site-header">
+      <a href="#top" class="brand">MirrorSky</a>
+      <nav class="main-nav" aria-label="Primary">
+        <a href="#releases" class="pill-link">Releases</a>
+        <a href="#roster" class="pill-link">Roster</a>
+        <a href="#merch" class="pill-link">Merch</a>
+        <a href="#demos" class="pill-link pill-link--accent">Demos</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-label="Welcome">
+        <img src="images/bandcamp-marquee.png" width="975" height="180" alt="MirrorSky Productions" class="hero-marquee">
+        <p class="hero-tagline">A record label in London making music that sounds like a mirror melting. Sugar first, teeth later.</p>
+        <div class="hero-ctas">
+          <a href="https://mirrorsky.bandcamp.com" target="_blank" rel="noopener" class="btn btn--cyan">Listen on Bandcamp</a>
+          <a href="#demos" class="btn btn--pink">Send a demo</a>
         </div>
+      </section>
+
+      <section id="releases" class="section" aria-labelledby="releases-heading">
+        <div class="section-head">
+          <h2 id="releases-heading" class="section-title">Releases</h2>
+          <span class="catalog-tag">MSKY 001—004</span>
+        </div>
+
+        <div class="release-grid">
+          <article class="release-card release-card--pink">
+            <div class="sheen" aria-hidden="true"></div>
+            <div class="release-cover release-cover--pink"><span>MSKY001 cover</span></div>
+            <div class="release-meta">
+              <span class="release-catalog">MSKY001 · EP · MAR 2026</span>
+              <h3 class="release-title">wet cathedral</h3>
+              <span class="release-artist">angelplastic</span>
+            </div>
+            <button class="play-btn" data-title="wet cathedral" data-meta="angelplastic · MSKY001">▶ Play</button>
+          </article>
+
+          <article class="release-card release-card--cyan">
+            <div class="sheen" aria-hidden="true"></div>
+            <div class="release-cover release-cover--cyan"><span>MSKY002 cover</span></div>
+            <div class="release-meta">
+              <span class="release-catalog">MSKY002 · SINGLE · MAY 2026</span>
+              <h3 class="release-title">glass teeth</h3>
+              <span class="release-artist">v0idmall</span>
+            </div>
+            <button class="play-btn" data-title="glass teeth" data-meta="v0idmall · MSKY002">▶ Play</button>
+          </article>
+
+          <article class="release-card release-card--yellow">
+            <div class="sheen" aria-hidden="true"></div>
+            <div class="release-cover release-cover--yellow"><span>MSKY003 cover</span></div>
+            <div class="release-meta">
+              <span class="release-catalog">MSKY003 · LP · JUL 2026</span>
+              <h3 class="release-title">a hole in the ceiling of heaven</h3>
+              <span class="release-artist">SPRITECORE</span>
+            </div>
+            <button class="play-btn" data-title="a hole in the ceiling of heaven" data-meta="SPRITECORE · MSKY003">▶ Play</button>
+          </article>
+
+          <article class="release-card release-card--purple">
+            <div class="sheen" aria-hidden="true"></div>
+            <div class="release-cover release-cover--purple"><span>MSKY004 cover</span></div>
+            <div class="release-meta">
+              <span class="release-catalog">MSKY004 · EP · SEP 2026</span>
+              <h3 class="release-title">softwear</h3>
+              <span class="release-artist">kitten motorway</span>
+            </div>
+            <button class="play-btn" data-title="softwear" data-meta="kitten motorway · MSKY004">▶ Play</button>
+          </article>
+        </div>
+      </section>
+
+      <section id="roster" class="section" aria-labelledby="roster-heading">
+        <h2 id="roster-heading" class="section-title" style="margin-bottom: 30px;">Roster</h2>
+        <div class="roster-grid">
+          <a href="https://mirrorsky.bandcamp.com" target="_blank" rel="noopener" class="roster-link">
+            <span class="roster-name">angelplastic</span>
+            <span class="roster-catalog">MSKY001</span>
+          </a>
+          <a href="https://mirrorsky.bandcamp.com" target="_blank" rel="noopener" class="roster-link">
+            <span class="roster-name">v0idmall</span>
+            <span class="roster-catalog">MSKY002</span>
+          </a>
+          <a href="https://mirrorsky.bandcamp.com" target="_blank" rel="noopener" class="roster-link">
+            <span class="roster-name">SPRITECORE</span>
+            <span class="roster-catalog">MSKY003</span>
+          </a>
+          <a href="https://mirrorsky.bandcamp.com" target="_blank" rel="noopener" class="roster-link">
+            <span class="roster-name">kitten motorway</span>
+            <span class="roster-catalog">MSKY004</span>
+          </a>
+        </div>
+      </section>
+
+      <section id="merch" class="section" aria-labelledby="merch-heading">
+        <div class="merch-panel">
+          <div class="sheen" aria-hidden="true"></div>
+          <h2 id="merch-heading" class="merch-title">Merch — soon!</h2>
+          <p class="merch-copy">Puffy-print tees, holographic 7" sleeves, and one very ill-advised inflatable. Follow on Bandcamp to be told first.</p>
+        </div>
+      </section>
+
+      <section id="demos" class="demos-grid" aria-label="Demos and mailing list">
+        <div class="demo-panel demo-panel--demos">
+          <h3>Demos</h3>
+          <p>Three tracks max, private streaming links only — no attachments, no zips. Tell us where you're from and what the record is for. We answer everything we like within a month.</p>
+          <a href="mailto:demos@mirrorsky.productions">demos@mirrorsky.productions</a>
+        </div>
+        <div class="demo-panel demo-panel--mail">
+          <h3>Mailing list</h3>
+          <p>One email per release. Nothing else, ever.</p>
+          <form class="mail-form">
+            <label for="mail-email" class="skip-link">Email address</label>
+            <input id="mail-email" type="email" required placeholder="you@domain" class="mail-input">
+            <button type="submit" class="mail-submit">Join</button>
+          </form>
+          <span class="mail-confirm" role="status">Logged! Welcome to the mirror. ✿</span>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>MirrorSky Productions · London, UK</span>
+      <div class="footer-links">
+        <a href="https://mirrorsky.bandcamp.com" target="_blank" rel="noopener">Bandcamp</a>
+        <a href="#top">Back to top</a>
       </div>
+    </footer>
 
-      <div class="hero-copy">
-        <header class="site-header-main">
-          <h1 class="blink-text">mirrorsky</h1>
-        </header>
+    <div class="now-playing" role="status">
+      <div class="now-playing-art" aria-hidden="true"></div>
+      <div class="now-playing-info">
+        <span class="now-playing-title"></span>
+        <span class="now-playing-meta"></span>
       </div>
-    </section>
-
-    <section id="about" class="section" aria-labelledby="about-heading">
-      <h2 id="about-heading">About Me</h2>
-      <div class="about-content"></div>
-    </section>
-
-    <section id="projects" class="section projects-section" aria-labelledby="projects-heading">
-      <h2 id="projects-heading" class="section-title">My Projects</h2>
-
-      <div class="project-grid">
-        <article class="project-card" aria-labelledby="proj1">
-          <div class="card-image">
-            <img src="images/1.png" alt="AI artwork">
-          </div>
-          <h3 id="proj1"></h3>
-        </article>
-
-        <article class="project-card" aria-labelledby="proj2">
-          <div class="card-image">
-            <img src="images/2.png" alt="AI artwork">
-          </div>
-          <h3 id="proj2"></h3>
-        </article>
-
-        <article class="project-card" aria-labelledby="proj3">
-          <div class="card-image">
-            <img src="images/3.png" alt="AI artwork">
-          </div>
-          <h3 id="proj3"></h3>
-        </article>
-
-        <article class="project-card" aria-labelledby="proj4">
-          <div class="card-image">
-            <img src="images/4.png" alt="AI artwork">
-          </div>
-          <h3 id="proj4"></h3>
-        </article>
-
-        <article class="project-card" aria-labelledby="proj5">
-          <div class="card-image">
-            <img src="images/5.png" alt="Deep Nidra project artwork">
-          </div>
-          <h3 id="proj5">Deep Nidra</h3>
-          <p class="card-desc">Invite-only meditation library.</p>
-          <a href="https://deepnidra.com" class="card-link" target="_blank" rel="noopener noreferrer">OPEN &gt;</a>
-        </article>
-
-        <article class="project-card" aria-labelledby="proj6">
-          <div class="card-image">
-            <div class="ising-card-thumb" role="img" aria-label="Checkerboard spin lattice preview"></div>
-          </div>
-          <h3 id="proj6">Ising playground</h3>
-          <p class="card-desc">2D Ising model: click spins, tune temperature near T<sub>c</sub> ≈ 2.27, run Metropolis dynamics.</p>
-          <a href="ising.html" class="card-link">OPEN &gt;</a>
-        </article>
-
-        <article class="project-card" aria-labelledby="proj7">
-          <div class="card-image">
-            <img src="images/bandcamp-marquee.png" width="975" height="180" alt="Mirrorsky Productions Bandcamp header art">
-          </div>
-          <h3 id="proj7">Mirrorsky on Bandcamp</h3>
-          <p class="card-desc">London, UK — streaming, downloads, and releases on Bandcamp.</p>
-          <a href="https://mirrorsky.bandcamp.com" class="card-link" target="_blank" rel="noopener noreferrer">LISTEN &gt;</a>
-        </article>
-
-        <article class="project-card" aria-labelledby="proj8">
-          <div class="card-image">
-            <div class="avz-card-thumb" role="img" aria-label="Walkable top-down map preview, Pokémon-style terrain"></div>
-          </div>
-          <h3 id="proj8">The Estate</h3>
-          <p class="card-desc">A walkable Pokémon-style map of the house, river, and grounds — arrow keys to explore.</p>
-          <div style="display: flex; align-items: baseline; gap: 1rem;">
-            <a href="estate.html" class="card-link">OPEN &gt;</a>
-            <a href="estate-credits.html" class="card-link" style="font-size: 0.35rem; opacity: 0.7;">credits</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
-    <section id="contact" class="section contact-section" aria-labelledby="contact-heading">
-      <h2 id="contact-heading">Get in Touch</h2>
-      <div class="contact-content"></div>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <p>© mirrorsky</p>
-  </footer>
+      <div class="now-playing-spacer"></div>
+      <span class="now-playing-hint">Spotify embed slots here</span>
+      <button class="now-playing-close">Close</button>
+    </div>
+  </div>
 
   <script src="js/main.js"></script>
 </body>
